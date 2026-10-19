@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/data/candi_data.dart';
+import 'package:flutter_application_1/screens/detail_screen.dart';
 
 void main() {
-  runApp(const MainApp());
+  print('Jumlah candi: ${candiList.length}');
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
+    return MaterialApp(
+      title: 'Wisata Candi',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: DetailScreen(candi: candiList[0]),
     );
   }
 }

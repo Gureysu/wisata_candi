@@ -1,7 +1,5 @@
 import 'package:flutter_application_1/models/candi.dart';
 
-// CATATAN: imageUrls di bawah masih foto placeholder (picsum.photos).
-// Ganti dengan URL foto candi yang langsung menuju file gambar (.jpg/.png).
 var candiList = [
   Candi(
     name: 'Candi Borobudur',

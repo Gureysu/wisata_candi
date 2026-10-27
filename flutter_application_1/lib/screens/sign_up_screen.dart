@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:provider/provider.dart'; // Wajib diimport untuk berinteraksi dengan Provider
+
+// Import AuthProvider untuk mengubah status login pengguna setelah berhasil mendaftar
+import 'package:flutter_application_1/providers/auth_provider.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -15,8 +19,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _fullnameController = TextEditingController();
 
   String _errorText = '';
-  bool _isSignedUp = false;
+  // _isSignedUp dinonaktifkan karena alurnya langsung diarahkan masuk menggunakan AuthProvider global
   bool _obscurePassword = true;
+
+  // Fungsi penanganan proses pendaftaran (Sign Up)
+  void _handleSignUp() {
+    final fullName = _fullnameController.text.trim();
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Validasi input sederhana
+    if (fullName.isEmpty || username.isEmpty || password.isEmpty) {
+      setState(() {
+        _errorText = 'Semua kolom formulir harus diisi!';
+      });
+      return;
+    }
+
+    setState(() {
+      _errorText = '';
+    });
+
+    // Otomatis membuat pengguna langsung masuk (Sign In) menggunakan nama yang didaftarkan
+    context.read<AuthProvider>().signIn(username);
+
+    // Kembali ke layar sebelumnya (ProfileScreen) dengan status sudah masuk
+    Navigator.pop(context);
+  }
 
   @override
   void dispose() {
@@ -43,6 +72,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Menampilkan pesan error validasi di atas jika ada
+                  if (_errorText.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        _errorText,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
 
                   // TODO 5: TextFormField nama lengkap
                   TextFormField(
@@ -72,10 +113,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Kata Sandi',
-                      errorText: _errorText.isNotEmpty ? _errorText : null,
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () {
+                          // Contoh penggunaan Ephemeral State bawaan layar (cukup setState)
                           setState(() {
                             _obscurePassword = !_obscurePassword;
                           });
@@ -89,31 +130,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
 
-                  // TODO 7: ElevatedButton Sign In
+                  // TODO 7: ElevatedButton Sign Up
                   const SizedBox(height: 20),
 
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _handleSignUp, // Memanggil fungsi pendaftaran saat ditekan
                     child: const Text('Sign Up'),
                   ),
 
-                  // TODO 8: TextButton Sign Up
+                  // TODO 8: TextButton Menuju Sign In jika sudah punya akun
                   const SizedBox(height: 10),
-                  // TextButton(
-                  //   onPressed: () {},
-                  //   child: const Text('Belum punya akun? Daftar di sini.'),
-                  // ),
                   RichText(
                     text: TextSpan(
                       text: 'Sudah punya akun? ',
-                      style: const TextStyle(fontSize: 16, color: Colors.deepPurple),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.deepPurple,
+                      ),
                       children: [
                         TextSpan(
                           text: 'Masuk di sini.',
                           style: const TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              // Kembali ke layar sebelumnya (Layar Sign In)
+                              Navigator.pop(context);
+                            },
                         ),
                       ],
                     ),

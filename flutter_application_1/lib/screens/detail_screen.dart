@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Wajib diimport untuk mengakses context.watch & context.read
 import 'package:flutter_application_1/models/candi.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+// Import provider dan profile screen untuk keperluan integrasi state management
+import 'package:flutter_application_1/providers/favorite_provider.dart';
+import 'package:flutter_application_1/screens/profile_screen.dart';
 
 class DetailScreen extends StatelessWidget {
   final Candi candi;
@@ -8,6 +13,9 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Membaca sekaligus mendengarkan status favorit dari FavoriteProvider menggunakan watch
+    final isFav = context.watch<FavoriteProvider>().isFavorite(candi.name);
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -39,10 +47,26 @@ class DetailScreen extends StatelessWidget {
                       color: Colors.deepPurple[100]?.withValues(alpha: 0.8),
                       shape: BoxShape.circle,
                     ),
-                    child: IconButton(
-                      onPressed: () {},
+                    child: // Cari bagian IconButton untuk tombol back kustom di dalam Stack:
+                    IconButton(
+                      onPressed: () {
+                        // CEK: Hanya lakukan pop jika ada halaman di antrean sebelumnya
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        } else {
+                          // Opsional: Tampilkan pesan pemberitahuan jika Anda mau
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Anda sudah berada di halaman utama',
+                              ),
+                            ),
+                          );
+                        }
+                      },
                       icon: const Icon(Icons.arrow_back),
                     ),
+
                   ),
                 ),
               ],
@@ -65,9 +89,16 @@ class DetailScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      // 2. Tombol Favorit yang terhubung dengan state management Provider
                       IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.favorite_border),
+                        onPressed: () {
+                          // Menggunakan read untuk memanggil aksi toggle tanpa mendengarkan widget tree secara berkala
+                          context.read<FavoriteProvider>().toggle(candi.name);
+                        },
+                        icon: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.red : null,
+                        ),
                       ),
                     ],
                   ),
@@ -191,6 +222,17 @@ class DetailScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      // 3. Tombol Uji Sementara (Berdasarkan materi slide halaman 19) untuk membuka layar profil
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileScreen()),
+          );
+        },
+        backgroundColor: Colors.deepPurple[100],
+        child: const Icon(Icons.person, color: Colors.deepPurple),
       ),
     );
   }
